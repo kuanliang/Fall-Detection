@@ -8,8 +8,21 @@ import numpy as np
 value_list = ['X(g)', 'Y(g)', 'Z(g)', 'Theta(deg)', 'Phi(deg)']
 
 
+class Coordinate_axis():
+    X_AXIS = 'X(g)'
+    Y_AXIS = 'Y(g)'
+    Z_AXIS = 'Z(g)'
+    THETA = 'Theta(deg)'
+    PHI = 'Phi(deg)'
 
-
+    
+def get_start_and_end_time(df, coordinate_axis, sec=0.5):
+    coordinate_less_than_zero = df[df[coordinate_axis] < 0].iloc[0].name
+    start_time = coordinate_less_than_zero - sec
+    end_time = coordinate_less_than_zero + sec
+    return start_time, end_time
+    
+    
 def get_record(currentDf, nextDf):
     '''
     '''
@@ -49,7 +62,7 @@ def get_record(currentDf, nextDf):
 
 
 
-def xls_to_records(path, start_stop_dict):
+def xls_to_records(path):
     '''read in xlsx file and parse worksheets to form matrix records
     
     Notes: columns are ['Number', 'X(g)', 'Y(g)', 'Z(g)', 'R(g)', 'Theta(deg)', 'Phi(deg)']
@@ -74,11 +87,12 @@ def xls_to_records(path, start_stop_dict):
         csvfile.close()
         
         testDf = pd.read_csv(temp_file, skiprows=1, index_col='Time(s)')
-        
-        start_time = start_stop_dict[index]['start_time']
-        end_time = start_stop_dict[index]['end_time']
+        start_time, stop_time = get_target_rows(testDf, Coordinate_axis.Y_AXIS, sec=step_time * 2)
+
+        #start_time = start_stop_dict[index]['start_time']
+        #end_time = start_stop_dict[index]['end_time']
         step_time = 0.25
-        step_nb = int(end_time - start_time)
+        step_nb = int(round(end_time - start_time))
         
         filteredDf = testDf[(testDf.index >= start_time) & (testDf.index < end_time)].copy()
         
